@@ -208,6 +208,11 @@ class PyBullet:
         """
         return self.physics_client.getLinkState(self._bodies_idx[body], link, computeLinkVelocity=True)[6]
 
+    def get_visual_data(self,body):
+
+
+        return self.physics_client.getVisualShapeData(self._bodies_idx[body])[0]
+
     def get_link_angular_velocity(self, body, link):
         """Get the angular velocity of the link of the body.
 
