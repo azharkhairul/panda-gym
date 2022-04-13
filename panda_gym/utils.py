@@ -3,7 +3,7 @@ import numpy as np
 def distance(a, b):
     assert a.shape == b.shape
     return np.linalg.norm(a - b, axis=-1)
-#iaohdoashs
+
 def threshold_convergence(input):
     k = 5  #the enlargement scale
     # a = 0.2 #speed of convergence for step-down
