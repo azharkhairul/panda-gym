@@ -226,16 +226,20 @@ class PickAndPlaceCluttered(Task):
     def compute_reward(self, achieved_goal, desired_goal, info):
         d = distance(achieved_goal, desired_goal)
 
-        current_object2 = np.array(self.sim.get_base_position("object2"))
-        current_object3 = np.array(self.sim.get_base_position("object3"))
-
-        penalty = comparee(self.previous_object2, self.previous_object3,  current_object2, current_object3)
-       
         ee_pos = np.array(self.sim.get_link_position("panda", 11))
         current_object1 = np.array(self.sim.get_base_position("object1"))
-        pen = 0
-        if (sum(abs(ee_pos-current_object1))) > 0.04:
-            pen = -0.5
+        current_object2 = np.array(self.sim.get_base_position("object2"))
+        current_object3 = np.array(self.sim.get_base_position("object3"))
+        
+        if self.ep_counter > 10000:
+            penalty = comparee(self.previous_object2, self.previous_object3,  current_object2, current_object3)
+        else:
+            penalty = 0 
+        
+        if (sum(abs(ee_pos-current_object1))) > 0.02: #penalty to encourage contact with the target object
+            pen = -1
+        else:
+            pen = 0
 
         '''overwrites the previous object position with new'''
         self.previous_object2 = []
