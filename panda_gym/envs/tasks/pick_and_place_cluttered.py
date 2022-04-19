@@ -234,9 +234,10 @@ class PickAndPlaceCluttered(Task):
         if self.ep_counter > 10000:
             penalty = comparee(self.previous_object2, self.previous_object3,  current_object2, current_object3)
         else:
-            penalty = 0 
+            penalty = 0 #in the beginning, agent will not penalised for colliding with other object
+
         dis =  distance(ee_pos, current_object1)
-        if (sum(abs(ee_pos-current_object1))) > 0.02: #penalty to encourage contact with the target object
+        if (sum(abs(ee_pos-current_object1))) > 0.04: #penalty to encourage contact with the target object
             pen = -dis
         else:
             pen = 0

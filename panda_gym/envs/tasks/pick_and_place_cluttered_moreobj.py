@@ -279,10 +279,10 @@ class PickAndPlaceClutteredMoreObj(Task):
             object1_position = [0.0, 0.0, self.object_size / 2]
 
             object2_position = [a, a, az+self.object_size / 2]    #curriculum learning
-            object3_position = [a, a, bz+self.object_size / 2]    #curriculum learning
-            object4_position = [b, b, az+self.object_size / 2]    #curriculum learning
+            object3_position = [a, a, az+self.object_size / 2]    #curriculum learning
+            object4_position = [b, b, bz+self.object_size / 2]    #curriculum learning
             object5_position = [b, b, bz+self.object_size / 2]    #curriculum learning
-            object6_position = [b, b, az+self.object_size / 2]    #curriculum learning
+            object6_position = [b, b, bz+self.object_size / 2]    #curriculum learning
 
             # object2_position = [0.0, 0.0, self.object_size / 2]
             # object3_position = [0.0, 0.0, self.object_size / 2]

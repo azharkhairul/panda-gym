@@ -1,9 +1,9 @@
 import numpy as np
 from gym import utils
-
+from turtle import pen
 from panda_gym.envs.core import Task
 from panda_gym.utils import distance
-
+from pyrsistent import b
 
 class Stack(Task):
     def __init__(
@@ -12,14 +12,19 @@ class Stack(Task):
         reward_type="sparse",
         distance_threshold=0.1,
         goal_xy_range=0.3,
+        goal_z_range=0.2,
         obj_xy_range=0.3,
     ):
         self.sim = sim
+
+        self.ep_counter = 0
+
         self.reward_type = reward_type
         self.distance_threshold = distance_threshold
         self.object_size = 0.04
         self.goal_range_low = np.array([-goal_xy_range / 2, -goal_xy_range / 2, 0])
         self.goal_range_high = np.array([goal_xy_range / 2, goal_xy_range / 2, 0])
+        self.goal_range_high_train = np.array([goal_xy_range / 2, goal_xy_range / 2, goal_z_range])
         self.obj_range_low = np.array([-obj_xy_range / 2, -obj_xy_range / 2, 0])
         self.obj_range_high = np.array([obj_xy_range / 2, obj_xy_range / 2, 0])
         with self.sim.no_rendering():
@@ -112,6 +117,7 @@ class Stack(Task):
         return achieved_goal
 
     def reset(self):
+        self.ep_counter += 1
         self.goal = self._sample_goal()
         object1_position, object2_position = self._sample_objects()
         self.sim.set_base_pose("target1", self.goal[:3], [0, 0, 0, 1])
@@ -120,23 +126,121 @@ class Stack(Task):
         self.sim.set_base_pose("object2", object2_position, [0, 0, 0, 1])
 
     def _sample_goal(self):
-        goal1 = [0.0, 0.0, self.object_size / 2]  # z offset for the cube center
-        goal2 = [0.0, 0.0, 3 * self.object_size / 2]  # z offset for the cube center
-        noise = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
-        goal1 += noise
-        goal2 += noise
-        return np.concatenate((goal1, goal2))
+        # if self.ep_counter > 15000:
+        #     goal1 = [0.0, 0.0, self.object_size / 2]  # z offset for the cube center
+        #     goal2 = [0.0, 0.0, 3 * self.object_size / 2]  # z offset for the cube center
+        #     noise = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+        #     goal1 += noise
+        #     goal2 += noise
+        #     return np.concatenate((goal1, goal2))
+        # else:
+        #     while True:
+        #         goal1 = [0.0, 0.0, self.object_size / 2]  # z offset for the cube center
+        #         goal2 = [0.0, 0.0, self.object_size / 2]  # z offset for the cube center
+        #         noise1 = self.np_random.uniform(self.goal_range_low, self.goal_range_high_train)
+        #         noise2 = self.np_random.uniform(self.goal_range_low, self.goal_range_high_train)
+        #         goal1 += noise1
+        #         goal2 += noise2
+        #         if distance(goal1, goal2) > 0.05:
+        #             self.goal2 = goal2
+        #             return np.concatenate((goal1, goal2))
+        while True:
+            if self.ep_counter <= 10000:
+                a = 0.0
+                az = 0.0 + 0.04
+                noise1 = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+                noise2 = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+                b = 0.0
+                bz = 0.0
+
+            if self.ep_counter > 10000 and self.ep_counter <= 20000:
+                a = 0.0
+                az = 0.0
+                b = 0.0
+                bz = 0.0 + 0.04
+                noise1 = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+                noise2 = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+
+            if self.ep_counter > 20000:
+                a = 0.0
+                az = 0.0
+                b = 0.0
+                bz = 0.04
+                noise1 = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+                noise2 = noise1
+
+            goal1 = [a, a, az + self.object_size / 2]  # z offset for the cube center
+            goal2 = [b, b, bz + self.object_size / 2]  # z offset for the cube center        
+            goal1 += noise1
+            goal2 += noise2
+            if distance(goal1, goal2) > 0.05:
+                return np.concatenate((goal1, goal2))
 
     def _sample_objects(self):
         # while True:  # make sure that cubes are distant enough
-        object1_position = [0.0, 0.0, self.object_size / 2]
-        object2_position = [0.0, 0.0, 3 * self.object_size / 2]
-        noise1 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-        noise2 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-        object1_position += noise1
-        object2_position += noise2
-        # if distance(object1_position, object2_position) > 0.1:
-        return object1_position, object2_position
+        #     object1_position = [0.0, 0.0, self.object_size / 2]
+        #     object2_position = [0.0, 0.0, self.object_size / 2]
+        #     noise1 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+        #     noise2 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+        #     object1_position += noise1
+        #     object2_position += noise2
+        #     if distance(object1_position, object2_position) > 0.05:
+        #         return object1_position, object2_position
+        while True:
+            if self.ep_counter <= 10000:
+                a = 0.0
+                az = 0.0
+                noise1 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                noise2 = self.goal[3:]
+                b = 0.0
+                bz = 0.0
+
+            if self.ep_counter > 10000 and self.ep_counter <= 20000:
+                a = 0.0
+                az = 0.0
+                b = 0.0
+                bz = 0.0
+                noise1 = self.goal[:3]
+                noise2 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+
+            if self.ep_counter > 20000:
+                a = 0.0
+                az = 0.0
+                b = 0.0
+                bz = 0.0
+                noise1 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                noise2 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                
+            object1_position = [a, a, az + self.object_size / 2]
+            object2_position = [b, b, bz + self.object_size / 2]
+            object1_position += noise1
+            object2_position += noise2
+            if distance(object1_position, object2_position) > 0.05:
+                return object1_position, object2_position
+
+        # if self.ep_counter > 20000:
+        #     while True:
+        #         object1_position = [0.0, 0.0, self.object_size / 2]
+        #         object2_position = [0.0, 0.0, self.object_size / 2]
+        #         noise1 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+        #         noise2 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+        #         object1_position += noise1
+        #         object2_position += noise2
+        #         if distance(object1_position, object2_position) > 0.05:
+        #             return object1_position, object2_position
+            
+        # if self.ep_counter > 10000 and self.ep_counter < 20000:
+        #     object1_position = [1.1, 1.1, -0.4 + (self.object_size / 2)]
+        #     object2_position = [0.0, 0.0, self.object_size / 2]
+        #     noise2 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+        #     object2_position += noise2
+        #     return object1_position, object2_position
+        # if self.ep_counter < 10000:
+        #     object2_position = [1.1, 1.1, -0.4 + (self.object_size / 2)]
+        #     object1_position = [0.0, 0.0, self.object_size / 2]
+        #     noise1 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+        #     object1_position += noise1
+        #     return object1_position, object2_position
 
     def is_success(self, achieved_goal, desired_goal):
         # must be vectorized !!
