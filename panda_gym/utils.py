@@ -23,9 +23,9 @@ def comparee(a1,b1,a2,b2):
     penalty1 = 0
     penalty2 = 0
     if (sum(abs(a1-a2))) > 0.01:
-        penalty1=5
+        penalty1=20
     if (sum(abs(b1-b2))) > 0.01:
-        penalty2=5
+        penalty2=20
 
     return -(penalty1+penalty2)
 
@@ -36,13 +36,13 @@ def compareemoreobj(a1,b1,c1,d1,e1,a2,b2,c2,d2,e2):
     penalty4 = 0
     penalty5 = 0
     if (sum(abs(a1-a2))) > 0.01:
-        penalty1=1
+        penalty1=20
     if (sum(abs(b1-b2))) > 0.01:
-        penalty2=1    
+        penalty2=20    
     if (sum(abs(c1-c2))) > 0.01:
-        penalty3=1
+        penalty3=20
     if (sum(abs(d1-d2))) > 0.01:
-        penalty4=1    
+        penalty4=20   
     if (sum(abs(e1-e2))) > 0.01:
-        penalty5=1
+        penalty5=20
     return -(penalty1+penalty2+penalty3+penalty4+penalty5)

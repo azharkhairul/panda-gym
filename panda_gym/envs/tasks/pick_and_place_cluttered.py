@@ -38,13 +38,22 @@ class PickAndPlaceCluttered(Task):
     def _create_scene(self):
         self.sim.create_plane(z_offset=-0.4)
         self.sim.create_table(length=1.1, width=0.7, height=0.4, x_offset=-0.3)
-        self.sim.create_box(
+        # self.sim.create_box(
+        #     body_name="object1",
+        #     half_extents=[
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #     ],
+        #     mass=2,
+        #     position=[0.0, 0.0, self.object_size / 2],
+        #     rgba_color=[0.9, 0.1, 0.1, 1],
+        #     friction=5,  # increase friction. For some reason, it helps a lot learning
+        # )
+        self.sim.create_cylinder(
             body_name="object1",
-            half_extents=[
-                self.object_size / 2,
-                self.object_size / 2,
-                self.object_size / 2,
-            ],
+            radius = 0.02,
+            height = 0.05,
             mass=2,
             position=[0.0, 0.0, self.object_size / 2],
             rgba_color=[0.9, 0.1, 0.1, 1],
@@ -74,18 +83,27 @@ class PickAndPlaceCluttered(Task):
             rgba_color=[0.1, 0.1, 0.9, 1],
             friction=5,  # increase friction. For some reason, it helps a lot learning
         )
-        self.sim.create_box(
+        self.sim.create_cylinder(
             body_name="target",
-            half_extents=[
-                self.object_size / 2,
-                self.object_size / 2,
-                self.object_size / 2,
-            ],
+            radius = 0.02,
+            height = 0.05,
             mass=0.0,
             ghost=True,
             position=[0.0, 0.0, 0.05],
             rgba_color=[1, 1, 0, 0.3],
         )
+        # self.sim.create_box(
+        #     body_name="target",
+        #     half_extents=[
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #     ],
+        #     mass=0.0,
+        #     ghost=True,
+        #     position=[0.0, 0.0, 0.05],
+        #     rgba_color=[1, 1, 0, 0.3],
+        # )
 
     def get_goal(self):
         return self.goal.copy()
@@ -237,7 +255,7 @@ class PickAndPlaceCluttered(Task):
             penalty = 0 #in the beginning, agent will not penalised for colliding with other object
 
         dis =  distance(ee_pos, current_object1)
-        if (sum(abs(ee_pos-current_object1))) > 0.04: #penalty to encourage contact with the target object
+        if (sum(abs(ee_pos-current_object1))) > 0.05: #penalty to encourage contact with the target object
             pen = -dis
         else:
             pen = 0

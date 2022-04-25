@@ -16,6 +16,7 @@ class PickAndPlace(Task):
         obj_xy_range=0.3,
     ):
         self.sim = sim
+        self.ep_counter = 0.0
         self.reward_type = reward_type
         self.distance_threshold = distance_threshold
         self.object_size = 0.04
@@ -80,6 +81,7 @@ class PickAndPlace(Task):
         return object_position
 
     def reset(self):
+        self.ep_counter += 1
         # a = ep_counter()
         # b = current_ep() #previous episode because reset is called in the beginning of new episode
         # print(b-1)
@@ -112,62 +114,61 @@ class PickAndPlace(Task):
     
     #original_sparse    
 
-        d = distance(achieved_goal, desired_goal)
-        if self.reward_type == "sparse":
-            return -(d > self.distance_threshold).astype(np.float32)
-        else:
-            return -d
+        # d = distance(achieved_goal, desired_goal)
+        # if self.reward_type == "sparse":
+        #     return -(d > self.distance_threshold).astype(np.float32)
+        # else:
+        #     return -d
 
     #initialisation code for modified reward function
     #must enable following code to use the mod function
         
-        # distance_object_threshold = 0.05
-        # distance_threshold = 0.1      #end-effector threshold with the target
+        distance_object_threshold = 0.05
+        distance_threshold = 0.1      #end-effector threshold with the target
 
-        # d = distance(achieved_goal, desired_goal)
-        # current = current_ep()     #count the number of time compute_reward function is called
-        # # print(current)
-        # ee_pos = self.sim.get_link_position("panda", 11)
-        # siz = np.size(achieved_goal)
+        d = distance(achieved_goal, desired_goal)
+        current = self.ep_counter     #count the number of time compute_reward function is called
+        # print(current)
+        ee_pos = self.sim.get_link_position("panda", 11)
+        siz = np.size(achieved_goal)
         
-        # ee_pos = np.array(ee_pos-desired_goal)
+        ee_pos = np.array(ee_pos-desired_goal)
 
-        # x = ee_pos[0]
-        # y = ee_pos[1]
-        # z = ee_pos[2]
+        x = ee_pos[0]
+        y = ee_pos[1]
+        z = ee_pos[2]
 
     #Dense2Sparse using End-effector penalty reward function
-
         # # 1 episode = 50 timesteps
 
-        # transition_episode = 1750   
+        transition_episode = 750   
 
-        # if current > transition_episode: 
-        #     #sparse reward
-        #     return -(d > distance_object_threshold).astype(np.float32)
+        if current > transition_episode: 
+            #sparse reward
+            return -(d > distance_object_threshold).astype(np.float32)
 
-        # else:
-        #     # Dense reward
-        #     # Prioritized all coordinates
-        #     if siz == 3: 
+        else:
+            # Dense reward
+            # Prioritized all coordinates
+            if siz == 3: 
                 
-        #         if  (x > distance_threshold) or (x < -distance_threshold):
-        #             ee_pos=(ee_pos[0]*10, ee_pos[1],ee_pos[2])
+                if  (x > distance_threshold) or (x < -distance_threshold):
+                    ee_pos=(ee_pos[0]*10, ee_pos[1],ee_pos[2])
                 
-        #         if  (y > distance_threshold) or (y < -distance_threshold):
-        #             ee_pos=(ee_pos[0], ee_pos[1]*5,ee_pos[2])
+                if  (y > distance_threshold) or (y < -distance_threshold):
+                    ee_pos=(ee_pos[0], ee_pos[1]*5,ee_pos[2])
                 
-        #         if  (z > distance_threshold) or (z < -distance_threshold):
-        #             ee_pos=(ee_pos[0], ee_pos[1],ee_pos[2])
+                if  (z > distance_threshold) or (z < -distance_threshold):
+                    ee_pos=(ee_pos[0], ee_pos[1],ee_pos[2])
 
-        #         if d > distance_object_threshold:
-        #             a = -1-np.linalg.norm(ee_pos, axis=-1)
-        #             return a
-        #         else:
-        #             return -np.linalg.norm(ee_pos, axis=-1)
+                if d > distance_object_threshold:
+                    a = -1-np.linalg.norm(ee_pos, axis=-1)
+                    return a
+                else:
+                    return -np.linalg.norm(ee_pos, axis=-1)
 
-        #     else: 
-        #         return -(d > distance_object_threshold).astype(np.float32)
+            else: 
+                return -(d > distance_object_threshold).astype(np.float32)
 
     # #Dense2Sparse using Dense Reward Function
         # 1 episode = 50 timesteps

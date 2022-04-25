@@ -333,14 +333,27 @@ class PickAndPlaceClutteredMoreObj(Task):
     def compute_reward(self, achieved_goal, desired_goal, info):
         d = distance(achieved_goal, desired_goal)
 
+        ee_pos = np.array(self.sim.get_link_position("panda", 11))
+        current_object1 = np.array(self.sim.get_base_position("object1"))
         current_object2 = np.array(self.sim.get_base_position("object2"))
         current_object3 = np.array(self.sim.get_base_position("object3"))
         current_object4 = np.array(self.sim.get_base_position("object4"))
         current_object5 = np.array(self.sim.get_base_position("object5"))
         current_object6 = np.array(self.sim.get_base_position("object6"))
         
-        penalty = compareemoreobj(self.previous_object2, self.previous_object3, self.previous_object4, self.previous_object5, self.previous_object6,current_object2, current_object3, current_object4, current_object5, current_object6)
+        # penalty = compareemoreobj(self.previous_object2, self.previous_object3, self.previous_object4, self.previous_object5, self.previous_object6,current_object2, current_object3, current_object4, current_object5, current_object6)
        
+        if self.ep_counter > 15000:
+            penalty = compareemoreobj(self.previous_object2, self.previous_object3, self.previous_object4, self.previous_object5, self.previous_object6,current_object2, current_object3, current_object4, current_object5, current_object6)
+        else:
+            penalty = 0 #in the beginning, agent will not penalised for colliding with other object
+
+        dis =  distance(ee_pos, current_object1)
+        if (sum(abs(ee_pos-current_object1))) > 0.05: #penalty to encourage contact with the target object
+            pen = -dis/2
+        else:
+            pen = 0    
+
         # ee_pos = np.array(self.sim.get_link_position("panda", 11))
         # current_object1 = np.array(self.sim.get_base_position("object1"))
         # pen = 0
@@ -359,7 +372,7 @@ class PickAndPlaceClutteredMoreObj(Task):
         self.previous_object6 = []
         self.previous_object6 = current_object6
 
-        return (-(d > self.distance_threshold).astype(np.float32) + penalty)
+        return (-(d > self.distance_threshold).astype(np.float32) + penalty )
         # return (-(d > self.distance_threshold).astype(np.float32) + penalty + pen) #sparse
         # return -d + penalty     #dense
 
