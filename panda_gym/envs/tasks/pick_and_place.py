@@ -32,25 +32,43 @@ class PickAndPlace(Task):
     def _create_scene(self):
         self.sim.create_plane(z_offset=-0.4)
         self.sim.create_table(length=1.1, width=0.7, height=0.4, x_offset=-0.3)
-        self.sim.create_box(
+        # self.sim.create_box(
+        #     body_name="object",
+        #     half_extents=[
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #     ],
+        #     mass=2,
+        #     position=[0.0, 0.0, self.object_size / 2],
+        #     rgba_color=[0.9, 0.1, 0.1, 1],
+        #     friction=5,  # increase friction. For some reason, it helps a lot learning
+        # )
+        # self.sim.create_box(
+        #     body_name="target",
+        #     half_extents=[
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #     ],
+        #     mass=0.0,
+        #     ghost=True,
+        #     position=[0.0, 0.0, 0.05],
+        #     rgba_color=[0.9, 0.1, 0.1, 0.3],
+        # )
+        self.sim.create_cylinder(
             body_name="object",
-            half_extents=[
-                self.object_size / 2,
-                self.object_size / 2,
-                self.object_size / 2,
-            ],
+            height = 0.04,
+            radius = 0.02,
             mass=2,
             position=[0.0, 0.0, self.object_size / 2],
             rgba_color=[0.9, 0.1, 0.1, 1],
             friction=5,  # increase friction. For some reason, it helps a lot learning
         )
-        self.sim.create_box(
+        self.sim.create_cylinder(
             body_name="target",
-            half_extents=[
-                self.object_size / 2,
-                self.object_size / 2,
-                self.object_size / 2,
-            ],
+            height = 0.04,
+            radius = 0.02,
             mass=0.0,
             ghost=True,
             position=[0.0, 0.0, 0.05],

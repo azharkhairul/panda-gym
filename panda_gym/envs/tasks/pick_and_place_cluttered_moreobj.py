@@ -29,6 +29,7 @@ class PickAndPlaceClutteredMoreObj(Task):
         self.previous_object4 = []
         self.previous_object5 = []
         self.previous_object6 = []
+        self.previous_object7 = []
 
         self.goal_range_low = np.array([-goal_xy_range / 2, -goal_xy_range / 2, 0.0])
         self.goal_range_high = np.array([goal_xy_range / 2, goal_xy_range / 2, goal_z_range])
@@ -114,6 +115,18 @@ class PickAndPlaceClutteredMoreObj(Task):
             friction=5,  # increase friction. For some reason, it helps a lot learning
         )
         self.sim.create_box(
+            body_name="object7",
+            half_extents=[
+                self.object_size / 2,
+                self.object_size / 2,
+                self.object_size / 2,
+            ],
+            mass=2,
+            position=[0.0, 0.0, self.object_size / 2],
+            rgba_color=[0.1, 0.6, 0.6, 1],
+            friction=5,  # increase friction. For some reason, it helps a lot learning
+        )
+        self.sim.create_box(
             body_name="target",
             half_extents=[
                 self.object_size / 2,
@@ -164,6 +177,10 @@ class PickAndPlaceClutteredMoreObj(Task):
         object_velocity6 = np.array(self.sim.get_base_velocity("object6"))
         object_angular_velocity6 = np.array(self.sim.get_base_angular_velocity("object6"))
         
+        object_position7 = np.array(self.sim.get_base_position("object7"))
+        object_rotation7 = np.array(self.sim.get_base_rotation("object7"))
+        object_velocity7 = np.array(self.sim.get_base_velocity("object7"))
+        object_angular_velocity7 = np.array(self.sim.get_base_angular_velocity("object7"))
         # rgba1_color=np.array([0.9, 0.1, 0.1, 1])
         # rgba2_color=np.array([0.1, 0.9, 0.1, 1])
         # rgba3_color=np.array([0.1, 0.1, 0.9, 1])
@@ -208,6 +225,10 @@ class PickAndPlaceClutteredMoreObj(Task):
                 object_velocity6,
                 object_angular_velocity6,
 
+                object_position7,
+                object_rotation7,
+                object_velocity7,
+                object_angular_velocity7,
                 # rgba1_color,
                 # rgba2_color,
                 # rgba3_color,
@@ -226,7 +247,7 @@ class PickAndPlaceClutteredMoreObj(Task):
         self.ep_counter += 1
 
         self.goal = self._sample_goal()
-        object1_position, object2_position,object3_position, object4_position, object5_position,object6_position = self._sample_object()
+        object1_position, object2_position,object3_position, object4_position, object5_position,object6_position, object7_position = self._sample_object()
         self.sim.set_base_pose("target", self.goal, [0, 0, 0, 1])
         self.sim.set_base_pose("object1", object1_position, [0, 0, 0, 1])
         self.sim.set_base_pose("object2", object2_position, [0, 0, 0, 1])
@@ -235,7 +256,7 @@ class PickAndPlaceClutteredMoreObj(Task):
         self.sim.set_base_pose("object4", object4_position, [0, 0, 0, 1])
         self.sim.set_base_pose("object5", object5_position, [0, 0, 0, 1])
         self.sim.set_base_pose("object6", object6_position, [0, 0, 0, 1])
-
+        self.sim.set_base_pose("object7", object7_position, [0, 0, 0, 1])
         '''initialise overwrite the previous object position '''
         self.previous_object2 = []
         self.previous_object2 = object2_position
@@ -248,6 +269,8 @@ class PickAndPlaceClutteredMoreObj(Task):
         self.previous_object5 = object5_position
         self.previous_object6 = []
         self.previous_object6 = object6_position
+        self.previous_object7 = []
+        self.previous_object7 = object7_position
 
     def _sample_goal(self):
         """Randomize goal."""
@@ -268,12 +291,19 @@ class PickAndPlaceClutteredMoreObj(Task):
             a = 0.0
             az = 0.0
 
-        if self.ep_counter < 25000:
+        if self.ep_counter < 20000:
             b = 1.1
             bz = -0.4
         else:
             b = 0.0
             bz = 0.0
+
+        if self.ep_counter < 30000:
+            c = 1.1
+            cz = -0.4
+        else:
+            c = 0.0
+            cz = 0.0
       
         while True:
             object1_position = [0.0, 0.0, self.object_size / 2]
@@ -282,7 +312,8 @@ class PickAndPlaceClutteredMoreObj(Task):
             object3_position = [a, a, az+self.object_size / 2]    #curriculum learning
             object4_position = [b, b, bz+self.object_size / 2]    #curriculum learning
             object5_position = [b, b, bz+self.object_size / 2]    #curriculum learning
-            object6_position = [b, b, bz+self.object_size / 2]    #curriculum learning
+            object6_position = [c, c, cz+self.object_size / 2]    #curriculum learning
+            object7_position = [c, c, cz+self.object_size / 2]    #curriculum learning
 
             # object2_position = [0.0, 0.0, self.object_size / 2]
             # object3_position = [0.0, 0.0, self.object_size / 2]
@@ -296,12 +327,14 @@ class PickAndPlaceClutteredMoreObj(Task):
             noise4 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
             noise5 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
             noise6 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+            noise7 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
             object1_position += noise1
             object2_position += noise2
             object3_position += noise3
             object4_position += noise4
             object5_position += noise5
             object6_position += noise6
+            object7_position += noise7
 
             if (
                 distance(object1_position, object2_position) > 0.05 and 
@@ -309,22 +342,30 @@ class PickAndPlaceClutteredMoreObj(Task):
                 distance(object1_position, object5_position) > 0.05 and 
                 distance(object1_position, object4_position) > 0.05 and 
                 distance(object1_position, object3_position) > 0.05 and
+                distance(object1_position, object7_position) > 0.05 and
 
                 distance(object2_position, object6_position) > 0.05 and 
                 distance(object2_position, object5_position) > 0.05 and 
                 distance(object2_position, object4_position) > 0.05 and 
                 distance(object2_position, object3_position) > 0.05 and
+                distance(object2_position, object7_position) > 0.05 and
 
                 distance(object3_position, object5_position) > 0.05 and 
                 distance(object3_position, object4_position) > 0.05 and 
                 distance(object3_position, object6_position) > 0.05 and
+                distance(object3_position, object7_position) > 0.05 and
 
                 distance(object4_position, object5_position) > 0.05 and 
                 distance(object4_position, object6_position) > 0.05 and
+                distance(object4_position, object7_position) > 0.05 and
 
-                distance(object5_position, object6_position) > 0.05
+
+                distance(object5_position, object6_position) > 0.05 and
+                distance(object5_position, object7_position) > 0.05 and
+
+                distance(object6_position, object7_position) > 0.05
                 ) :
-                return object1_position , object2_position, object3_position, object4_position , object5_position, object6_position
+                return object1_position , object2_position, object3_position, object4_position , object5_position, object6_position, object7_position
 
     def is_success(self, achieved_goal, desired_goal):
         d = distance(achieved_goal, desired_goal)
@@ -340,11 +381,11 @@ class PickAndPlaceClutteredMoreObj(Task):
         current_object4 = np.array(self.sim.get_base_position("object4"))
         current_object5 = np.array(self.sim.get_base_position("object5"))
         current_object6 = np.array(self.sim.get_base_position("object6"))
-        
+        current_object7 = np.array(self.sim.get_base_position("object7"))
         # penalty = compareemoreobj(self.previous_object2, self.previous_object3, self.previous_object4, self.previous_object5, self.previous_object6,current_object2, current_object3, current_object4, current_object5, current_object6)
        
         if self.ep_counter > 15000:
-            penalty = compareemoreobj(self.previous_object2, self.previous_object3, self.previous_object4, self.previous_object5, self.previous_object6,current_object2, current_object3, current_object4, current_object5, current_object6)
+            penalty = compareemoreobj(self.previous_object2, self.previous_object3, self.previous_object4, self.previous_object5, self.previous_object6, self.previous_object7, current_object2, current_object3, current_object4, current_object5, current_object6, current_object7)
         else:
             penalty = 0 #in the beginning, agent will not penalised for colliding with other object
 
@@ -371,9 +412,11 @@ class PickAndPlaceClutteredMoreObj(Task):
         self.previous_object5 = current_object5
         self.previous_object6 = []
         self.previous_object6 = current_object6
+        self.previous_object7 = []
+        self.previous_object7 = current_object7
 
-        return (-(d > self.distance_threshold).astype(np.float32) + penalty )
-        # return (-(d > self.distance_threshold).astype(np.float32) + penalty + pen) #sparse
+        # return (-(d > self.distance_threshold).astype(np.float32) + penalty )
+        return (-(d > self.distance_threshold).astype(np.float32) + penalty + pen) #sparse
         # return -d + penalty     #dense
 
 

@@ -53,11 +53,11 @@ class PickAndPlaceCluttered(Task):
         self.sim.create_cylinder(
             body_name="object1",
             radius = 0.02,
-            height = 0.05,
+            height = 0.04,
             mass=2,
             position=[0.0, 0.0, self.object_size / 2],
             rgba_color=[0.9, 0.1, 0.1, 1],
-            friction=5,  # increase friction. For some reason, it helps a lot learning
+            friction=6,  # increase friction. For some reason, it helps a lot learning
         )
         self.sim.create_box(
             body_name="object2",
