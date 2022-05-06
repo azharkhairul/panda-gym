@@ -291,14 +291,14 @@ class PickAndPlaceClutteredMoreObj(Task):
             a = 0.0
             az = 0.0
 
-        if self.ep_counter < 20000:
+        if self.ep_counter < 25000:
             b = 1.1
             bz = -0.4
         else:
             b = 0.0
             bz = 0.0
 
-        if self.ep_counter < 30000:
+        if self.ep_counter < 40000:
             c = 1.1
             cz = -0.4
         else:
@@ -320,6 +320,7 @@ class PickAndPlaceClutteredMoreObj(Task):
             # object4_position = [0.0, 0.0, self.object_size / 2]
             # object5_position = [0.0, 0.0, self.object_size / 2]
             # object6_position = [0.0, 0.0, self.object_size / 2]
+            # object7_position = [0.0, 0.0, self.object_size / 2]
             
             noise1 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
             noise2 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
@@ -382,24 +383,19 @@ class PickAndPlaceClutteredMoreObj(Task):
         current_object5 = np.array(self.sim.get_base_position("object5"))
         current_object6 = np.array(self.sim.get_base_position("object6"))
         current_object7 = np.array(self.sim.get_base_position("object7"))
-        # penalty = compareemoreobj(self.previous_object2, self.previous_object3, self.previous_object4, self.previous_object5, self.previous_object6,current_object2, current_object3, current_object4, current_object5, current_object6)
+        penalty = compareemoreobj(self.previous_object2, self.previous_object3, self.previous_object4, self.previous_object5, self.previous_object6,current_object2, current_object3, current_object4, current_object5, current_object6)
        
-        if self.ep_counter > 15000:
-            penalty = compareemoreobj(self.previous_object2, self.previous_object3, self.previous_object4, self.previous_object5, self.previous_object6, self.previous_object7, current_object2, current_object3, current_object4, current_object5, current_object6, current_object7)
-        else:
-            penalty = 0 #in the beginning, agent will not penalised for colliding with other object
-
+        # if self.ep_counter > 5000:
+        #     penalty = compareemoreobj(self.previous_object2, self.previous_object3, self.previous_object4, self.previous_object5, self.previous_object6, self.previous_object7, current_object2, current_object3, current_object4, current_object5, current_object6, current_object7)
+        # else:
+        #     penalty = 0 #in the beginning, agent will not penalised for colliding with other object
+        # penalty = compareemoreobj(self.previous_object2, self.previous_object3, self.previous_object4, self.previous_object5, self.previous_object6, self.previous_object7, current_object2, current_object3, current_object4, current_object5, current_object6, current_object7)
+ 
         dis =  distance(ee_pos, current_object1)
         if (sum(abs(ee_pos-current_object1))) > 0.05: #penalty to encourage contact with the target object
             pen = -dis/2
         else:
             pen = 0    
-
-        # ee_pos = np.array(self.sim.get_link_position("panda", 11))
-        # current_object1 = np.array(self.sim.get_base_position("object1"))
-        # pen = 0
-        # if (sum(abs(ee_pos-current_object1))) > 0.04:
-        #     pen = -1
 
         '''overwrites the previous object position with new'''
         self.previous_object2 = []

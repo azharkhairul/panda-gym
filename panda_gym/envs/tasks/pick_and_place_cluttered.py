@@ -50,6 +50,30 @@ class PickAndPlaceCluttered(Task):
         #     rgba_color=[0.9, 0.1, 0.1, 1],
         #     friction=5,  # increase friction. For some reason, it helps a lot learning
         # )
+        # self.sim.create_box(
+        #     body_name="object2",
+        #     half_extents=[
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #     ],
+        #     mass=2,
+        #     position=[0.0, 0.0, self.object_size / 2],
+        #     rgba_color=[0.1, 0.9, 0.1, 1],
+        #     friction=5,  # increase friction. For some reason, it helps a lot learning
+        # )
+        # self.sim.create_box(
+        #     body_name="object3",
+        #     half_extents=[
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #         self.object_size / 2,
+        #     ],
+        #     mass=2,
+        #     position=[0.0, 0.0, self.object_size / 2],
+        #     rgba_color=[0.1, 0.1, 0.9, 1],
+        #     friction=5,  # increase friction. For some reason, it helps a lot learning
+        # )
         self.sim.create_cylinder(
             body_name="object1",
             radius = 0.02,
@@ -59,29 +83,23 @@ class PickAndPlaceCluttered(Task):
             rgba_color=[0.9, 0.1, 0.1, 1],
             friction=6,  # increase friction. For some reason, it helps a lot learning
         )
-        self.sim.create_box(
+        self.sim.create_cylinder(
             body_name="object2",
-            half_extents=[
-                self.object_size / 2,
-                self.object_size / 2,
-                self.object_size / 2,
-            ],
+            radius = 0.02,
+            height = 0.04,
             mass=2,
             position=[0.0, 0.0, self.object_size / 2],
             rgba_color=[0.1, 0.9, 0.1, 1],
-            friction=5,  # increase friction. For some reason, it helps a lot learning
+            friction=6,  # increase friction. For some reason, it helps a lot learning
         )
-        self.sim.create_box(
+        self.sim.create_cylinder(
             body_name="object3",
-            half_extents=[
-                self.object_size / 2,
-                self.object_size / 2,
-                self.object_size / 2,
-            ],
+            radius = 0.02,
+            height = 0.04,
             mass=2,
             position=[0.0, 0.0, self.object_size / 2],
             rgba_color=[0.1, 0.1, 0.9, 1],
-            friction=5,  # increase friction. For some reason, it helps a lot learning
+            friction=6,  # increase friction. For some reason, it helps a lot learning
         )
         self.sim.create_cylinder(
             body_name="target",

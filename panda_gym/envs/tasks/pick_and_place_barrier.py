@@ -1,3 +1,4 @@
+from email.iterators import body_line_iterator
 import numpy as np
 from gym import utils
 import random
@@ -5,18 +6,17 @@ import random
 from panda_gym.envs.core import Task
 from panda_gym.utils import distance
 
-class PickAndPlace(Task):
+class PickAndPlaceBarrier(Task):
     def __init__(
         self,
         sim,
         reward_type="sparse",
         distance_threshold=0.05,
-        goal_xy_range=0.3,
-        goal_z_range=0.2,
+        goal_xy_range=0.0,
+        goal_z_range=0.0,
         obj_xy_range=0.3,
     ):
         self.sim = sim
-        self.ep_counter = 0.0
         self.reward_type = reward_type
         self.distance_threshold = distance_threshold
         self.object_size = 0.04
@@ -31,64 +31,81 @@ class PickAndPlace(Task):
 
     def _create_scene(self):
         self.sim.create_plane(z_offset=-0.4)
+        self.sim.create_box(
+            half_extents = [0.1, 0.01, 0.03],
+            mass=0,
+            body_name = "barrier",
+            position=[0.15, 0.15, 0.03],
+            specular_color=[0.0, 0.0, 0.0],
+            rgba_color=[0.15, 0.15, 0.15, 1.0],
+        )
+        self.sim.create_box(
+            half_extents = [0.01, 0.1, 0.03],
+            mass=0,
+            body_name = "barrier",
+            position=[0.05, 0.25, 0.03],
+            specular_color=[0.0, 0.0, 0.0],
+            rgba_color=[0.15, 0.15, 0.15, 1.0],
+        )
         self.sim.create_table(length=1.1, width=0.7, height=0.4, x_offset=-0.3)
-        # self.sim.create_box(
-        #     body_name="object",
-        #     half_extents=[
-        #         self.object_size / 2,
-        #         self.object_size / 2,
-        #         self.object_size / 2,
-        #     ],
-        #     mass=2,
-        #     position=[0.0, 0.0, self.object_size / 2],
-        #     rgba_color=[0.9, 0.1, 0.1, 1],
-        #     friction=5,  # increase friction. For some reason, it helps a lot learning
-        # )
-        # self.sim.create_box(
-        #     body_name="target",
-        #     half_extents=[
-        #         self.object_size / 2,
-        #         self.object_size / 2,
-        #         self.object_size / 2,
-        #     ],
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=[0.0, 0.0, 0.05],
-        #     rgba_color=[0.9, 0.1, 0.1, 0.3],
-        # )
         # self.sim.create_cylinder(
         #     body_name="object",
-        #     height = 0.04,
-        #     radius = 0.02,
+        #     radius = 0.02, 
         #     mass=2,
-        #     position=[0.0, 0.0, self.object_size / 2],
+        #     height = 0.05,
+        #     position=[0.0, 0.0, 0 ],
         #     rgba_color=[0.9, 0.1, 0.1, 1],
         #     friction=5,  # increase friction. For some reason, it helps a lot learning
         # )
         # self.sim.create_cylinder(
         #     body_name="target",
-        #     height = 0.04,
-        #     radius = 0.02,
+        #     radius = 0.02, 
+        #     height = 0.05,
         #     mass=0.0,
         #     ghost=True,
         #     position=[0.0, 0.0, 0.05],
-        #     rgba_color=[0.9, 0.1, 0.1, 0.3],
+        #     rgba_color=[0.9, 0.1, 0.9, 0.3],
         # )
-        self.sim.create_sphere(
+        # self.sim.create_sphere(
+        #     body_name="object",
+        #     radius = 0.02, 
+        #     mass=2,
+
+        #     position=[0.0, 0.0, 0 ],
+        #     rgba_color=[0.9, 0.1, 0.1, 1],
+        #     friction=5,  # increase friction. For some reason, it helps a lot learning
+        # )
+        # self.sim.create_sphere(
+        #     body_name="target",
+        #     radius = 0.02, 
+        #     mass=0.0,
+        #     ghost=True,
+        #     position=[0.0, 0.0, 0.05],
+        #     rgba_color=[0.9, 0.1, 0.9, 0.3],
+        # )
+        self.sim.create_box(
             body_name="object",
-            radius = 0.02,
+            half_extents=[
+                self.object_size / 2,
+                self.object_size / 2,
+                self.object_size / 2,
+            ],
             mass=2,
-            position=[0.0, 0.0, self.object_size / 2],
+            position=[0.0, 0.0, 0 ],
             rgba_color=[0.9, 0.1, 0.1, 1],
             friction=5,  # increase friction. For some reason, it helps a lot learning
         )
-        self.sim.create_sphere(
+        self.sim.create_box(
             body_name="target",
-            radius = 0.02,
+            half_extents=[
+                self.object_size / 2,
+                self.object_size / 2,
+                self.object_size / 2,
+            ],
             mass=0.0,
             ghost=True,
             position=[0.0, 0.0, 0.05],
-            rgba_color=[0.9, 0.1, 0.1, 0.3],
+            rgba_color=[0.9, 0.1, 0.9, 0.3],
         )
 
     def get_goal(self):
@@ -115,7 +132,6 @@ class PickAndPlace(Task):
         return object_position
 
     def reset(self):
-        self.ep_counter += 1
         # a = ep_counter()
         # b = current_ep() #previous episode because reset is called in the beginning of new episode
         # print(b-1)
@@ -126,7 +142,7 @@ class PickAndPlace(Task):
 
     def _sample_goal(self):
         """Randomize goal."""
-        goal = [0.0, 0.0, self.object_size *2.5]  # z offset for the cube center
+        goal = [0.15, 0.25, self.object_size /2]  # z offset for the cube center
         noise = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
         if self.np_random.random() < 0.3:
             noise[2] = 0.0
@@ -149,17 +165,8 @@ class PickAndPlace(Task):
     #original_sparse    
 
         d = distance(achieved_goal, desired_goal)
-        ee_pos = np.array(self.sim.get_link_position("panda", 11))
-        current_object1 = np.array(self.sim.get_base_position("object"))
-
-        dis =  distance(ee_pos, current_object1)
-        if (sum(abs(ee_pos-current_object1))) > 0.05: #penalty to encourage contact with the target object
-            pen = -dis
-        else:
-            pen = 0
-
         if self.reward_type == "sparse":
-            return (-(d > self.distance_threshold).astype(np.float32) + pen)
+            return -(d > self.distance_threshold).astype(np.float32)
         else:
             return -d
 
@@ -170,8 +177,8 @@ class PickAndPlace(Task):
         # distance_threshold = 0.1      #end-effector threshold with the target
 
         # d = distance(achieved_goal, desired_goal)
-        # current = self.ep_counter     #count the number of time compute_reward function is called
-        # print(current)
+        # current = current_ep()     #count the number of time compute_reward function is called
+        # # print(current)
         # ee_pos = self.sim.get_link_position("panda", 11)
         # siz = np.size(achieved_goal)
         
@@ -182,9 +189,10 @@ class PickAndPlace(Task):
         # z = ee_pos[2]
 
     #Dense2Sparse using End-effector penalty reward function
+
         # # 1 episode = 50 timesteps
 
-        # transition_episode = 750   
+        # transition_episode = 1750   
 
         # if current > transition_episode: 
         #     #sparse reward
