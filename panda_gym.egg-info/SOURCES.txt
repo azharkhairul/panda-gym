@@ -4,6 +4,7 @@ setup.py
 panda_gym/__init__.py
 panda_gym/pybullet.py
 panda_gym/utils.py
+panda_gym/version.txt
 panda_gym.egg-info/PKG-INFO
 panda_gym.egg-info/SOURCES.txt
 panda_gym.egg-info/dependency_links.txt
@@ -13,6 +14,7 @@ panda_gym/envs/__init__.py
 panda_gym/envs/core.py
 panda_gym/envs/panda_tasks/__init__.py
 panda_gym/envs/panda_tasks/panda_pick_and_place.py
+panda_gym/envs/panda_tasks/panda_pick_and_place_barrier.py
 panda_gym/envs/panda_tasks/panda_pick_and_place_cluttered.py
 panda_gym/envs/panda_tasks/panda_pick_and_place_cluttered_moreobj.py
 panda_gym/envs/panda_tasks/panda_pick_and_place_convergence.py
@@ -24,6 +26,7 @@ panda_gym/envs/robots/__init__.py
 panda_gym/envs/robots/panda.py
 panda_gym/envs/tasks/__init__.py
 panda_gym/envs/tasks/pick_and_place.py
+panda_gym/envs/tasks/pick_and_place_barrier.py
 panda_gym/envs/tasks/pick_and_place_cluttered.py
 panda_gym/envs/tasks/pick_and_place_cluttered_moreobj.py
 panda_gym/envs/tasks/pick_and_place_convergence.py

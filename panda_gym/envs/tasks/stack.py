@@ -16,7 +16,7 @@ class Stack(Task):
         obj_xy_range=0.3,
     ):
         self.sim = sim
-
+        self.mode = 0
         self.ep_counter = 0
         self.obj1 = 0
         self.obj2 = 0
@@ -136,6 +136,7 @@ class Stack(Task):
         return achieved_goal
 
     def reset(self):
+        self.mode = 0
         self.ep_counter += 1
         if self.obj1 > 0:
             print('Object 1 was in place')
@@ -196,7 +197,7 @@ class Stack(Task):
         #         az = 0.0
         #         b = 0.0
         #         bz = 0.0 + 0.04
-        #         noise1 = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+        #         noise1 = self.np_random.uniform(self.goal_range_low, self.goal_self.mode = 0range_high)
         #         noise2 = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
 
         #     if self.ep_counter > 20000:
@@ -315,10 +316,7 @@ class Stack(Task):
     def compute_reward(self, achieved_goal, desired_goal, info):
         d = distance(achieved_goal, desired_goal)
         
-        pen1 = 0
-        pen2 = 0
-        obj1 = 0
-        obj2 = 0
+        
 
         ee_pos = np.array(self.sim.get_link_position("panda", 11))
         current_object1 = np.array(self.sim.get_base_position("object1"))
@@ -327,21 +325,35 @@ class Stack(Task):
         dis1 =  distance(ee_pos, current_object1)
         dis2 =  distance(ee_pos, current_object2)
 
-        obj1 = distance(self.goal[:3], current_object1)
-        
+        obj1dis = distance(self.goal[:3], current_object1)
+        obj2dis = distance(self.goal[3:], current_object2)
 
-        if obj1 > 0.04:
+        pen1 = 0
+        pen2 = 0
+        obj1 = 1
+        obj2 = 1
+        # obj1 = obj1dis
+        # obj2 = obj2dis
+        if obj1dis > 0.04:
             # obj1 = 1
             if (sum(abs(ee_pos-current_object1))) > 0.05: #penalty to encourage contact with the target object
-                pen1 = dis1/2
+                pen1 = dis1
         else:
-            self.obj1 += 1
-            obj2 = distance(self.goal[3:], current_object2)
-            if obj2 < 0.04:
-                self.obj2 += 1
+            if self.mode == 0:
+                self.mode += 1
+                obj1 = -5  
             else:
+                obj1 = 0  
+
+            self.obj1 += 1
+            if obj2dis > 0.04:
+                # obj2 = 1
                 if (sum(abs(ee_pos-current_object2))) > 0.05: #penalty to encourage contact with the target object
-                    pen2 = dis2/2
+                    pen2 = dis2
+            else:
+                self.obj2 += 1
+                obj2 = 0
+
         """
         The target of this reward is to make the agent learn the task in a curriculum manner:
         - It will be solving the object 1 first and then proceed with object 2
