@@ -4,10 +4,8 @@ import pybullet_data
 import cv2
 import numpy as np
 from PIL import Image
-
-# def distance(a, b):
-#     # print(a.shape)
-#     # print(b.shape)
+from scipy.sparse import csr_matrix
+# def distance(a, b):   #original distance function
 #     assert a.shape == b.shape
 #     result = a-b
 #     return np.linalg.norm(result, axis=-1)
@@ -59,23 +57,20 @@ def compareemoreobj(a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2):
     return -(penalty1+penalty2+penalty3+penalty4+penalty5+penalty6)
 
 def get_view(self):
-        # self.width=90
-        # self.height=60
-        # self.width=68
-        # self.height=45
+
         self.width=45
         self.height=30
         # self.width=23
         # self.height=15
         view_matrix1 = self.physics_client.computeViewMatrixFromYawPitchRoll(
-            cameraTargetPosition=(0.0, 0.0 , 0.15),
-            distance=0.6,
-            yaw=90,
-            pitch=-50,
+            cameraTargetPosition=(0.0, 0.0 , 0.0),
+            distance=0.3,
+            yaw=45,
+            pitch=-30,
             roll=0,
             upAxisIndex=2,
         )
-        proj_matrix1 = self.physics_client.computeProjectionMatrixFOV(
+        proj_matrix = self.physics_client.computeProjectionMatrixFOV(
             fov=60, aspect=float(self.width) / self.height, nearVal=0.1, farVal=100.0
         )
         
@@ -83,49 +78,51 @@ def get_view(self):
             width=self.width,
             height=self.height,
             viewMatrix=view_matrix1,
-            projectionMatrix=proj_matrix1,
+            projectionMatrix=proj_matrix,
             # renderer=p.ER_BULLET_HARDWARE_OPENGL,
         )
 
         view_matrix2 = self.physics_client.computeViewMatrixFromYawPitchRoll(
-            cameraTargetPosition=(0.0, 0.0 , 0.15),
-            distance=0.7,
-            yaw=0,
-            pitch=-0,
+            cameraTargetPosition=(0.0, 0.0 , 0.0),
+            distance=0.3,
+            yaw=135,
+            pitch=-30,
             roll=0,
             upAxisIndex=2,
         )
-        proj_matrix2 = self.physics_client.computeProjectionMatrixFOV(
-            fov=60, aspect=float(self.width) / self.height, nearVal=0.1, farVal=100.0
-        )
-        
+
         (_, _, px2, depth2, mask2) = p.getCameraImage(
             width=self.width,
             height=self.height,
             viewMatrix=view_matrix2,
-            projectionMatrix=proj_matrix2,
+            projectionMatrix=proj_matrix,
             # renderer=p.ER_BULLET_HARDWARE_OPENGL,
         )
+        # view_matrix3 = self.physics_client.computeViewMatrixFromYawPitchRoll(
+        #     cameraTargetPosition=(0.0, 0.0 , 0.0),
+        #     distance=0.3,
+        #     yaw=-45,
+        #     pitch=-30,
+        #     roll=0,
+        #     upAxisIndex=2,
+        # )
+        
+        # (_, _, px3, depth3, mask3) = p.getCameraImage(
+        #     width=self.width,
+        #     height=self.height,
+        #     viewMatrix=view_matrix3,
+        #     projectionMatrix=proj_matrix,
+        #     # renderer=p.ER_BULLET_HARDWARE_OPENGL,
+        # )
+
+        # return px1,px2,px3,mask1,mask2,mask3
         return px1,px2,mask1,mask2
-
-
-# def distance(a, b):
-#     # print(a.shape)
-#     # print(b.shape)
-    
-#     if np.any(a != None) and np.any(b!=None):
-#         assert a.shape == b.shape
-#         result = a-b
-#         return np.linalg.norm(result, axis=-1)
-#     else:
-#         return 0
+      
 def distance(a, b):
-    # print(a.shape)
-    # print(b.shape)
     assert a.shape == b.shape
     result = a*b
     return np.linalg.norm(result, axis=-1)
-    # return (sum(result))
+
 
 def thresh_callback(img):
     width=45
@@ -160,7 +157,13 @@ def thresh_callback(img):
 
 
 def mask2binary(self, a):
-    px1,px2,mask1,mask2 = get_view(self)
+    # px1,px2,px3,mask1,mask2,mask3 = get_view(self)
+    px1,px2,mask1,mask2= get_view(self)
+    
+    # rgb1 = Image.fromarray(px1) 
+    # rgb1.save('CAMMMEERRAAA11111.png')
+    # rgb2 = Image.fromarray(px2) 
+    # rgb2.save('../dkdc/CAMMMEERRAAA22222.png')
 
     if a == "obj":
         mode = 3.0 #object
@@ -179,7 +182,7 @@ def mask2binary(self, a):
 
     # BW_obj1 = Image.new('1', (self.width, self.height))
     # BW_obj1.putdata(new_image1)
-    # BW_obj1.save("goal1.jpg")
+    # BW_obj1.save("goal121.png")
 
     mask_obj2 = Image.fromarray(mask2) 
     new_image2 = []
@@ -190,4 +193,69 @@ def mask2binary(self, a):
         else:
             new_image2.append((0))
 
-    return new_image1, new_image2
+    
+    # mask_obj3 = Image.fromarray(mask3) 
+    # new_image3 = []
+    # for item in mask_obj3.getdata():
+
+    #     if (item == mode ):#object        
+    #         new_image3.append((1))
+    #     else:
+    #         new_image3.append((0))
+
+    return new_image1, new_image2 #, new_image3
+
+def eef_binary(self, a):
+    self.width=34
+    self.height=23
+
+
+    ee_pos = np.array(self.sim.get_link_position("panda", 11))
+    xA, yA, zA = ee_pos
+    zA = zA +0.1 # make the camera a little higher than the robot
+
+    view_matrix = p.computeViewMatrix(
+                        cameraEyePosition=[xA+0.15, yA, zA-0.06],
+                        cameraTargetPosition=[xA, yA, zA -0.06],
+                        cameraUpVector=[0, 0, 1]
+                    )
+    proj_matrix = self.physics_client.computeProjectionMatrixFOV(
+        fov=60, aspect=float(self.width) / self.height, nearVal=0.1, farVal=100.0
+    )
+    
+    (_, _, px, depth, mask) = p.getCameraImage(
+        width=self.width,
+        height=self.height,
+        viewMatrix=view_matrix,
+        projectionMatrix=proj_matrix,
+        # renderer=p.ER_BULLET_HARDWARE_OPENGL,
+    )
+
+    if a == "obj":
+        mode = 3.0 #object
+    else:
+        mode = 4.0 #goal
+
+    mask = Image.fromarray(mask) 
+    new_image = []
+    for item in mask.getdata():
+        if (
+            item == mode #object              
+        ):
+            new_image.append((1))
+        else:
+            new_image.append((0))
+    # BW_obj1 = Image.new('1', (self.width, self.height))
+    # BW_obj1.putdata(new_image)
+    # BW_obj1.save("eeff.png")
+    return new_image
+
+def compute_M(data):
+    data = np.array(data)
+    cols = np.arange(data.size)
+    return csr_matrix((cols, (np.ravel(data), cols)),shape=(data.max() + 1, data.size))
+
+def get_indices_sparse(data):
+    data = np.array(data)
+    M = compute_M(data)
+    return [np.mean(np.unravel_index(row.data, data.shape),1) for R,row in enumerate(M) if R>0]

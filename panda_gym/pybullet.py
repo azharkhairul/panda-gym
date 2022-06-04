@@ -526,7 +526,78 @@ class PyBullet:
             specular_color=[0.0, 0.0, 0.0],
             rgba_color=[0.15, 0.15, 0.15, 1.0],
         )
+    def create_slanted(self, z_offset):
+        """Create a plane. (Actually it is a thin box)
 
+        Args:
+            z_offset (float): Offset of the plane.
+        # """
+        for i in range(4):
+            h = 0.0
+            z = 0.0
+            a = 0.0
+            if i == 0:#position
+                x2 = 0.0
+                y2 = -0.25/2
+                for i in range(25):
+                    self.create_box(
+                        body_name="plane",
+                        half_extents=[0.23/2+a, 0.02/2, 0.005/2],
+                        mass=0,
+                        position=[x2, y2+h, 0.005/2 + z],
+                        specular_color=[0.0, 0.0, 0.0],
+                        rgba_color=[255, 255, 0.15, 1.0],
+                    )
+                    a = a + 0.01
+                    h = h-0.0085
+                    z = z+0.005
+            if i == 1:#position
+                x2 = -0.25/2
+                y2 = 0.0    
+                for i in range(25):
+                    self.create_box(
+                        body_name="plane",
+                        half_extents=[0.02/2, 0.23/2+a, 0.005/2],
+                        mass=0,
+                        position=[x2+h, y2, 0.005/2 + z],
+                        specular_color=[0.0, 0.0, 0.0],
+                        rgba_color=[255, 255, 0.15, 1.0],
+                    )
+                    h = h-0.0085
+                    a = a + 0.01
+                    z = z+0.005
+
+            if i == 2:#position
+                x2 = 0.0
+                y2 = 0.25/2
+                for i in range(25):
+                    self.create_box(
+                        body_name="plane",
+                        half_extents=[0.23/2+a, 0.02/2, 0.005/2],
+                        mass=0,
+                        position=[x2, y2+h, 0.005/2 + z],
+                        specular_color=[0.0, 0.0, 0.0],
+                        rgba_color=[255, 255, 0.15, 1.0],
+                    )
+                    h = h+0.0085
+                    z = z+0.005
+                    a = a + 0.01
+            if i == 3:#position
+                x2 = 0.25/2
+                y2 = 0.0
+                for i in range(25):
+                    self.create_box(
+                        body_name="plane",
+                        half_extents=[0.02/2, 0.23/2+a, 0.005/2],
+                        mass=0,
+                        position=[x2+h, y2, 0.005/2 + z],
+                        specular_color=[0.0, 0.0, 0.0],
+                        rgba_color=[255, 255, 0.15, 1.0],
+                    )
+                    h = h+0.0085
+                    z = z+0.005
+                    a = a + 0.01
+                    
     def create_table(self, length, width, height, x_offset=0):
         """Create a fixed table. Top is z=0, centered in y."""
         self.create_box(
