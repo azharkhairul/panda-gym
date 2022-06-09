@@ -9,6 +9,7 @@ from io import StringIO
 import math
 import cv2
 from tempfile import TemporaryFile
+from pyrsistent import get_in
 from scipy.sparse import csr_matrix
 
 from panda_gym.envs.core import Task
@@ -17,7 +18,7 @@ import pybullet as p
 import pybullet_utils.bullet_client as bc
 import pybullet_data
 
-class PickAndPlace(Task):
+class PickAndPlaceDense(Task):
     def __init__(
         self,
         sim,
@@ -42,6 +43,7 @@ class PickAndPlace(Task):
 
         self.width=45
         self.height=30
+        self.rew_thresh = 0.48
 
         self.sim = sim
         self.reward_type = reward_type
@@ -95,17 +97,27 @@ class PickAndPlace(Task):
                 self.goal3 = []
                 # self.goal1, self.goal2 , self.goal3 = mask2binary(self, a = "goal")
                 self.goal1, self.goal2 = mask2binary(self, a = "goal")
+                self.rew_goal1 = np.array(get_indices_sparse(self, 'goal', 1))
+                self.rew_goal2 = np.array(get_indices_sparse(self, 'goal', 2))
                 # eef = eef_binary(self, a = "goal")
                 # self.eef_goal = eef
             else:
-                self.rew_thresh = (sum(self.goal1) + sum(self.goal2)+ sum(self.goal3) ) * 0.05   #+ sum(self.goal3)
+                # self.rew_thresh = (sum(self.goal1) + sum(self.goal2)+ sum(self.goal3) ) * 0.05   #+ sum(self.goal3)
                 self.des_goal = np.concatenate([self.goal1.copy(),self.goal2.copy(),self.goal3.copy(), self.eef_goal.copy()])
                 self.goal1 = np.array(self.goal1)
                 self.goal2 = np.array(self.goal2) 
                 self.goal3 = np.array(self.goal3)
                 self.eef_goal = np.array(self.eef_goal)
+
+
                 # return np.concatenate([self.goal1.copy(),self.goal2.copy(), self.goal3.copy(), self.eef_goal.copy()])
-                return np.concatenate([self.goal1.copy(),self.goal2.copy(), self.eef_goal.copy()])
+                return np.concatenate(
+                    [
+                        self.goal1.copy(),
+                        self.goal2.copy(), 
+                        # self.eef_goal.copy()
+                    ]
+                )
     
     
     
@@ -118,7 +130,7 @@ class PickAndPlace(Task):
       
         # new_image1, new_image2 , new_image3= mask2binary(self, a = "obj")   #retrieve the binary img of the object
         new_image1, new_image2 , = mask2binary(self, a = "obj")
-        eef = eef_binary(self, a = "obj")    #retrieve the binary img from the eef
+        # eef = eef_binary(self, a = "obj")    #retrieve the binary img from the eef
         
         observation = np.concatenate(
             [
@@ -130,7 +142,7 @@ class PickAndPlace(Task):
                 new_image1,
                 new_image2,
                 # new_image3,
-                eef,
+                # eef,
             ]
         )
         return observation
@@ -139,14 +151,20 @@ class PickAndPlace(Task):
 
         # self.obj1, self.obj2, self.obj3 = mask2binary(self, a = "obj")
         self.obj1, self.obj2 = mask2binary(self, a = "obj")
-        self.eef_obj = eef_binary(self, a = "obj")
+        # self.eef_obj = eef_binary(self, a = "obj")
         self.obj1 = np.array(self.obj1)
         self.obj2 = np.array(self.obj2) 
         self.obj3 = np.array(self.obj3)
         self.eef_obj = np.array(self.eef_obj)
-
+        self.rew_obj1 = np.array(get_indices_sparse(self, 'obj', 1))
+        self.rew_obj2 = np.array(get_indices_sparse(self, 'obj', 2))
         # return np.concatenate([self.obj1,self.obj2,self.obj3, self.eef_obj])
-        return np.concatenate([self.obj1,self.obj2, self.eef_obj])
+        return np.concatenate(
+            [
+                self.obj1,
+                self.obj2, 
+                # self.eef_obj
+            ])
 
 
     def reset(self):
@@ -159,9 +177,13 @@ class PickAndPlace(Task):
         self.goal3 = []
         self.obj3 = []
         self.eef_goal = []
+        self.eef_obj = []
         # self.goal1, self.goal2, self.goal3 = mask2binary(self, a = "goal") #picture for the goal
         self.goal1, self.goal2 = mask2binary(self, a = "goal") #picture for the goal
-        self.eef_goal = eef_binary(self, a = "goal")
+        
+        self.rew_goal1 = np.array(get_indices_sparse(self, 'goal', 1))
+        self.rew_goal2 = np.array(get_indices_sparse(self, 'goal', 2))
+        # self.eef_goal = eef_binary(self, a = "goal")
         
     def _sample_goal(self):
         """Randomize goal."""
@@ -180,17 +202,47 @@ class PickAndPlace(Task):
         return object_position
 
     def is_success(self, achieved_goal, desired_goal):
-        d = distance(achieved_goal, desired_goal)
+        # d = distance(achieved_goal, desired_goal)
+        
+        dis1 = np.array(distance(self.rew_obj1, self.rew_goal1))
+        dis2 = np.array(distance(self.rew_obj2, self.rew_goal2))
+        # dis = np.linalg.norm((dis1 + dis2)/50, axis=-1)
+        if np.size(dis1) == 0:
+            dis1 = [0]
+        if np.size(dis2) == 0:
+            dis2 = [0]
+        dis = np.array(dis1 + dis2)/100
 
-        return (d >= self.rew_thresh).astype(np.float32)
+        return (dis <= self.rew_thresh).astype(np.float32)
 
 
     def compute_reward(self, achieved_goal, desired_goal, info):
-        d = distance(achieved_goal, desired_goal)
+        # d = distance(achieved_goal, desired_goal)
         
-        if sum(self.eef_obj) < 8:
-            penalty = -0.5
-        else: 
-            penalty = 0
-            
-        return -(d < self.rew_thresh).astype(np.float32) + penalty
+        # if sum(self.eef_obj) < 8:
+        #     penalty = -0.5
+        # else: 
+        #     penalty = 0
+        
+        # obj1 = np.array(get_indices_sparse(self, 'obj', 1))
+        # obj2 = np.array(get_indices_sparse(self, 'obj', 2))
+        # 
+
+        d1 = np.array(distance(self.rew_obj1, self.rew_goal1))
+        d2 = np.array(distance(self.rew_obj2, self.rew_goal2))
+        if np.size(d1) == 0:
+            d1 = [0]
+        if np.size(d2) == 0:
+            d2 = [0]
+        result = np.array(d1 + d2)/100
+        d = np.linalg.norm(result)
+        # print(d)
+        # d = np.array((d1 + d2)/50)
+        # print(d)
+        # print(d)
+        # print('d1',d1)
+        # print('d2',d2)
+        # print('total', d)
+        # return -(d < self.rew_thresh).astype(np.float32) + penalty
+        # return -(d > self.rew_thresh).astype(np.float32)
+        return -d

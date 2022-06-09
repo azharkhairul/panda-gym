@@ -32,8 +32,8 @@ for reward_type in ["sparse", "dense"]:
         max_episode_steps=50,
     )
     register(
-        id="PandaPickAndPlaceBarrier{}-v1".format(suffix),
-        entry_point="panda_gym.envs:PandaPickAndPlaceBarrierEnv",
+        id="PandaPickAndPlaceDenser{}-v1".format(suffix),
+        entry_point="panda_gym.envs:PandaPickAndPlaceDenseEnv",
         kwargs=kwargs,
         max_episode_steps=50,
     )
@@ -43,6 +43,12 @@ for reward_type in ["sparse", "dense"]:
         kwargs=kwargs,
         max_episode_steps=50,
     )
+    # register(
+    #     id="PandaPickAndPlaceDense{}-v1".format(suffix),
+    #     entry_point="panda_gym.envs:PandaPickAndPlaceDenseEnv",
+    #     kwargs=kwargs,
+    #     max_episode_steps=50,
+    # )
     register(
         id="PandaPickAndPlaceCluttered{}-v1".format(suffix),
         entry_point="panda_gym.envs:PandaPickAndPlaceClutteredEnv",

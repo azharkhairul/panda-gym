@@ -5,9 +5,15 @@ import cv2
 import numpy as np
 from PIL import Image
 from scipy.sparse import csr_matrix
-# def distance(a, b):   #original distance function
+def distance(a, b):   #original distance function
+    # assert a.shape == b.shape
+    result = sum(abs(a-b))
+    # return np.linalg.norm(result, axis=-1)
+    return np.array(result)
+
+# def distance(a, b):      #sparse 
 #     assert a.shape == b.shape
-#     result = a-b
+#     result = a*b
 #     return np.linalg.norm(result, axis=-1)
 
 def threshold_convergence(input):
@@ -113,15 +119,9 @@ def get_view(self):
         #     viewMatrix=view_matrix3,
         #     projectionMatrix=proj_matrix,
         #     # renderer=p.ER_BULLET_HARDWARE_OPENGL,
-        # )
-
-        # return px1,px2,px3,mask1,mask2,mask3
+        # )data,
         return px1,px2,mask1,mask2
-      
-def distance(a, b):
-    assert a.shape == b.shape
-    result = a*b
-    return np.linalg.norm(result, axis=-1)
+
 
 
 def thresh_callback(img):
@@ -158,7 +158,7 @@ def thresh_callback(img):
 
 def mask2binary(self, a):
     # px1,px2,px3,mask1,mask2,mask3 = get_view(self)
-    px1,px2,mask1,mask2= get_view(self)
+    px1,px2,mask1,mask2 = get_view(self)
     
     # rgb1 = Image.fromarray(px1) 
     # rgb1.save('CAMMMEERRAAA11111.png')
@@ -255,7 +255,17 @@ def compute_M(data):
     cols = np.arange(data.size)
     return csr_matrix((cols, (np.ravel(data), cols)),shape=(data.max() + 1, data.size))
 
-def get_indices_sparse(data):
+def get_indices_sparse(self,a, num):
+    if a == "obj":
+        new_image1, new_image2 = mask2binary(self, a)
+    else:
+        new_image1, new_image2 = mask2binary(self, 'goal')
+
+    if num == 1:
+        data = new_image1
+    else:
+        data = new_image2
+
     data = np.array(data)
     M = compute_M(data)
     return [np.mean(np.unravel_index(row.data, data.shape),1) for R,row in enumerate(M) if R>0]
