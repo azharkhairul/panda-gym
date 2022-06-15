@@ -5,12 +5,14 @@ import cv2
 import numpy as np
 from PIL import Image
 from scipy.sparse import csr_matrix
-def distance(a, b):   #original distance function
-    # assert a.shape == b.shape
-    result = sum(abs(a-b))
-    # return np.linalg.norm(result, axis=-1)
-    return np.array(result)
+# def distance(a, b):   #original distance function
+#     assert a.shape == b.shape
 
+#     return np.linalg.norm(b-a, axis=-1)
+#     # return np.array(result)
+def distance(a, b):
+    assert a.shape == b.shape
+    return np.linalg.norm(a - b, axis=-1)
 # def distance(a, b):      #sparse 
 #     assert a.shape == b.shape
 #     result = a*b

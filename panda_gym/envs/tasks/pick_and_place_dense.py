@@ -43,7 +43,7 @@ class PickAndPlaceDense(Task):
 
         self.width=45
         self.height=30
-        self.rew_thresh = 0.48
+        self.rew_thresh = 0.15
 
         self.sim = sim
         self.reward_type = reward_type
@@ -115,7 +115,7 @@ class PickAndPlaceDense(Task):
                     [
                         self.goal1.copy(),
                         self.goal2.copy(), 
-                        # self.eef_goal.copy()
+                        # self.eef_goal.copy(),
                     ]
                 )
     
@@ -211,9 +211,9 @@ class PickAndPlaceDense(Task):
             dis1 = [0]
         if np.size(dis2) == 0:
             dis2 = [0]
-        dis = np.array(dis1 + dis2)/100
-
-        return (dis <= self.rew_thresh).astype(np.float32)
+        dis = np.array(dis1 + dis2)/300
+        print('shape', np.shape(dis))
+        return (dis <= self.rew_thresh).astype(type='uint8')
 
 
     def compute_reward(self, achieved_goal, desired_goal, info):
@@ -226,7 +226,7 @@ class PickAndPlaceDense(Task):
         
         # obj1 = np.array(get_indices_sparse(self, 'obj', 1))
         # obj2 = np.array(get_indices_sparse(self, 'obj', 2))
-        # 
+        # # 
 
         d1 = np.array(distance(self.rew_obj1, self.rew_goal1))
         d2 = np.array(distance(self.rew_obj2, self.rew_goal2))
@@ -234,8 +234,9 @@ class PickAndPlaceDense(Task):
             d1 = [0]
         if np.size(d2) == 0:
             d2 = [0]
-        result = np.array(d1 + d2)/100
+        result = np.array(d1 + d2)/300
         d = np.linalg.norm(result)
+        # print(result)
         # print(d)
         # d = np.array((d1 + d2)/50)
         # print(d)
@@ -245,4 +246,4 @@ class PickAndPlaceDense(Task):
         # print('total', d)
         # return -(d < self.rew_thresh).astype(np.float32) + penalty
         # return -(d > self.rew_thresh).astype(np.float32)
-        return -d
+        return (-d).astype(type='uint8')

@@ -287,7 +287,8 @@ class PickAndPlaceCluttered(Task):
 
         # return (-(d > self.distance_threshold).astype(np.float32) + penalty)
         return (-(d > self.distance_threshold).astype(np.float32) + penalty + pen) #sparse
-        # return -d + penalty     #dense
+        # return -d + penalty     #dense        if dis1 == []:
+
 
 
 
