@@ -41,9 +41,11 @@ class PickAndPlaceDense(Task):
         self.physics_client.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
         self.physics_client.configureDebugVisualizer(p.COV_ENABLE_MOUSE_PICKING, 0)
 
-        self.width=45
-        self.height=30
-        self.rew_thresh = 0.15
+        # self.width=45
+        # self.height=30
+        self.width=17
+        self.height=11
+        self.rew_thresh = 0.05
 
         self.sim = sim
         self.reward_type = reward_type
