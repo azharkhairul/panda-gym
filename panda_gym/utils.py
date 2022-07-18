@@ -66,10 +66,12 @@ def compareemoreobj(a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2):
 
 def get_view(self):
 
-        self.width=45
-        self.height=30
+        # self.width=45
+        # self.height=30
         # self.width=23
         # self.height=15
+        self.width=13
+        self.height=8
         view_matrix1 = self.physics_client.computeViewMatrixFromYawPitchRoll(
             cameraTargetPosition=(0.0, 0.0 , 0.0),
             distance=0.3,
@@ -127,8 +129,11 @@ def get_view(self):
 
 
 def thresh_callback(img):
-    width=45
-    height=30
+    # width=45
+    # height=30
+    width=17
+    height=11
+
     threshold = 100
     shi = np.array(img,dtype='uint8')
     img = np.reshape(shi, (height, width))
@@ -208,9 +213,10 @@ def mask2binary(self, a):
     return new_image1, new_image2 #, new_image3
 
 def eef_binary(self, a):
-    self.width=34
-    self.height=23
-
+    # self.width=34
+    # self.height=23
+    self.width=17
+    self.height=11
 
     ee_pos = np.array(self.sim.get_link_position("panda", 11))
     xA, yA, zA = ee_pos
